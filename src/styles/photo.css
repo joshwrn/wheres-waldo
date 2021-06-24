@@ -1,0 +1,6 @@
+.picture {
+  display: block;
+  width: 100vw;
+  height: 80vh;
+  object-fit: contain;
+}
