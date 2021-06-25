@@ -1,12 +1,11 @@
 import React from 'react';
 import Board from './Board';
-import Mouse from './Mouse';
+import '../styles/app.css';
 
 function App() {
   return (
-    <div className="App">
+    <div className="app">
       <Board />
-      <Mouse />
     </div>
   );
 }

@@ -2,6 +2,7 @@
   position: absolute;
   background-color: rgba(0, 0, 0, 0.603);
   backdrop-filter: blur(2em);
-  padding: 0.5em 2em;
+  padding: 0.25em 2em 0.25em 1em;
   border-radius: 0.5em;
+  box-shadow: 0px 3px 5px 1px rgba(0, 0, 0, 0.541);
 }
