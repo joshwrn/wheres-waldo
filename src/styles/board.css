@@ -26,3 +26,108 @@
   padding: 2em;
   background-color: rgba(0, 0, 0, 0.479);
 }
+
+#sidebar > p {
+  font-size: 0.95rem;
+  margin-top: 0.5em;
+}
+
+#check {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.25s;
+  visibility: hidden;
+}
+
+#check-text {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.719);
+  color: rgb(255, 255, 255);
+  width: 10em;
+  height: 3em;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 1em;
+}
+
+#check-mark {
+  color: rgb(0, 255, 136);
+  margin-right: 0.5em;
+}
+
+#x-mark {
+  color: rgb(255, 0, 85);
+  margin-right: 0.5em;
+}
+
+#game-menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+#start-text {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.877);
+  color: rgb(255, 255, 255);
+  width: 20em;
+  height: fit-content;
+  padding: 3em;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 1em;
+  opacity: 100;
+  transition: opacity 0.25s;
+  cursor: pointer;
+}
+
+#name-form {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.719);
+  color: rgb(255, 255, 255);
+  width: 20em;
+  height: fit-content;
+  padding: 3em;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 1em;
+  transition: opacity 0.25s;
+}
+
+#game-over-text {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.719);
+  color: rgb(255, 255, 255);
+  width: 20em;
+  height: fit-content;
+  padding: 3em;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 1em;
+  transition: opacity 0.25s;
+}

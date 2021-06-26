@@ -4,6 +4,9 @@ import '../styles/photo.css';
 import '../styles/menu.css';
 import '../styles/board.css';
 
+import { AiFillCheckCircle } from 'react-icons/ai';
+import { FaTimesCircle } from 'react-icons/fa';
+
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
@@ -32,6 +35,10 @@ const Board = () => {
   const { x, y } = tagLocation;
   const temp = [];
   const [dragItem, setDragItem] = useState('');
+  const [correctCheck, setCorrectCheck] = useState('');
+  const [gameStatus, setGameStatus] = useState('setup');
+  const [playerName, setPlayerName] = useState('');
+  const [currentScore, setCurrentScore] = useState(0);
 
   //+ use server to verify item
   const verifyItem = (item) => {
@@ -70,6 +77,153 @@ const Board = () => {
       });
   }, []);
 
+  //? game set up functions
+
+  //+ sign user in
+  useEffect(() => {
+    firebase
+      .auth()
+      .signInAnonymously()
+      .then(() => {})
+      .catch((error) => {
+        console.log(error.message);
+      });
+  }, []);
+
+  //+ handle start
+
+  const handleStart = (e) => {
+    e.preventDefault();
+    sendStartTime(e);
+    setGameStatus('in-game');
+  };
+
+  //+ send starting time
+  const sendStartTime = (e) => {
+    e.preventDefault();
+
+    const user = firebase.auth().currentUser;
+    //
+    firebase
+      .firestore()
+      .collection('users')
+      .doc(user.uid)
+      .get()
+      .then((exists) => {
+        if (exists.data().score === undefined) {
+          console.log('add');
+          firebase
+            .firestore()
+            .collection('users')
+            .doc(user.uid)
+            .set({
+              name: 'anon',
+              score: 0,
+              start: firebase.firestore.FieldValue.serverTimestamp(),
+              end: '',
+            })
+            .catch(function (error) {
+              console.error('Error writing new message to database', error);
+            });
+        }
+        //
+        else {
+          // update timestamp
+          console.log('sub-collection  existed');
+          firebase
+            .firestore()
+            .collection('users')
+            .doc(user.uid)
+            .set(
+              {
+                start: firebase.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            )
+            .catch(function (error) {
+              console.error('Error writing new message to database', error);
+            });
+        }
+      });
+  };
+
+  //? Win functions
+
+  //+ send high score
+  const sendScore = async (e, player) => {
+    e.preventDefault();
+    const user = firebase.auth().currentUser;
+
+    await firebase.firestore().collection('users').doc(user.uid).set(
+      {
+        name: player,
+        end: firebase.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    const score = await firebase
+      .firestore()
+      .collection('users')
+      .doc(user.uid)
+      .get();
+
+    const highScore =
+      Math.max(
+        0,
+        500 - (score.data().end.seconds - score.data().start.seconds)
+      ) * 50;
+    setCurrentScore(highScore);
+    console.log('data score', score.data().score);
+    if (highScore > score.data().score) {
+      await firebase.firestore().collection('users').doc(user.uid).set(
+        {
+          score: highScore,
+        },
+        { merge: true }
+      );
+    }
+  };
+
+  //+ set end time
+
+  const sendEnd = async () => {
+    const user = firebase.auth().currentUser;
+
+    await firebase.firestore().collection('users').doc(user.uid).set(
+      {
+        end: firebase.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+  };
+
+  //+ check every item for chosen
+  const checkWin = (arr) => {
+    return arr.every((item) => item.chosen === true);
+  };
+
+  //@ handle submit
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    sendScore(e, playerName);
+    setGameStatus('over');
+  };
+
+  const handleChange = (e) => {
+    e.preventDefault();
+    const { value } = e.target;
+    setPlayerName(value);
+  };
+
+  //+ check for win every item update
+  useEffect(() => {
+    if (itemsArray.length > 0 && checkWin(itemsArray) === true) {
+      setGameStatus('enter-name');
+      sendEnd();
+    }
+  }, [itemsArray]);
+
   //+ match item locally
   const matchItem = (itemName) => {
     return itemsArray.find((item) => itemName === item.text);
@@ -79,30 +233,37 @@ const Board = () => {
   async function testLocation(e, itemName) {
     e.preventDefault();
     const chosenItem = matchItem(itemName);
-
     try {
       const verifyTest = await verifyItem(chosenItem);
-      console.log('test', verifyTest);
       if (verifyTest === true) {
-        console.log('correct');
         const itemIndex = itemsArray.findIndex(
           (item) => item.text === chosenItem.text
         );
-        setItemsArray(
-          (prev) => [...prev],
-          {
-            [itemsArray[itemIndex]]: (itemsArray[itemIndex].chosen = true),
-          },
-          console.log(itemsArray)
-        );
+        setItemsArray((prev) => [...prev], {
+          [itemsArray[itemIndex]]: (itemsArray[itemIndex].chosen = true),
+        });
+        showCorrect('Correct');
       } else {
-        console.log('wrong');
-        console.log(itemsArray);
+        showCorrect('Wrong');
       }
     } catch (e) {
       console.log(e);
     }
   }
+
+  //+ show correct or incorrect
+  const showCorrect = (result) => {
+    setCorrectCheck(result);
+    const check = document.getElementById('check');
+    check.style.setProperty('opacity', '100');
+    check.style.setProperty('visibility', 'visible');
+    setTimeout(function () {
+      check.style.setProperty('opacity', '0');
+    }, 750);
+    setTimeout(function () {
+      check.style.setProperty('visibility', 'hidden');
+    }, 1000);
+  };
 
   //+ handle the drop
   const handleDrop = (e) => {
@@ -126,12 +287,64 @@ const Board = () => {
     setDragItem(e.target.getAttribute('data-text'));
   };
 
+  //! game menu
+  let gameMenu;
+
+  if (gameStatus === 'enter-name') {
+    gameMenu = (
+      <div>
+        <form onSubmit={handleSubmit} id="name-form">
+          <label>
+            Name:
+            <input type="text" onChange={handleChange} value={playerName} />
+          </label>
+          <button type="submit"> Submit </button>
+        </form>
+      </div>
+    );
+  }
+
+  if (gameStatus === 'over') {
+    gameMenu = (
+      <div id="game-over-text">
+        <h2>Game Over</h2>
+        <p>Your Score: {currentScore}</p>
+        <p>High Scores:</p>
+        {/* map over high scores */}
+      </div>
+    );
+  }
+
+  if (gameStatus === 'setup') {
+    gameMenu = (
+      <div id="start-text">
+        <h2 onClick={handleStart}>Start Game</h2>
+      </div>
+    );
+  }
+
+  if (gameStatus === 'in-game') {
+    gameMenu = null;
+  }
+
   return (
     <div>
       <div id="container">
+        <p>hi {playerName}</p>
+        <div id="check">
+          <div id="check-text">
+            {correctCheck === 'Correct' ? (
+              <AiFillCheckCircle id="check-mark" />
+            ) : (
+              <FaTimesCircle id="x-mark" />
+            )}
+            <p>{correctCheck}</p>
+          </div>
+        </div>
+        <div id="game-menu">{gameMenu}</div>
         <div id="board">
           <div id="sidebar">
-            <h3>Find:</h3>
+            <h2>Find:</h2>
             {itemsArray.map((item) => {
               return (
                 <p
@@ -140,11 +353,14 @@ const Board = () => {
                       ? {
                           textDecoration: 'line-through',
                           opacity: '50%',
+                          cursor: 'default',
                         }
-                      : null
+                      : {
+                          cursor: 'pointer',
+                        }
                   }
                   key={item.text}
-                  draggable="true"
+                  draggable={item.chosen === true ? 'false' : 'true'}
                   onDragStart={onDragStart}
                   data-text={item.text}
                 >
