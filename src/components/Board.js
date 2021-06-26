@@ -29,14 +29,11 @@ const firestore = firebase.firestore();
 const Board = () => {
   const [tagLocation, setTagLocation] = useState({ x: 0, y: 0 });
   const [itemsArray, setItemsArray] = useState([]);
-  const [contextMenu, setContextMenu] = useState({
-    display: 'none',
-    x: 0,
-    y: 0,
-  });
   const { x, y } = tagLocation;
   const temp = [];
+  const [dragItem, setDragItem] = useState('');
 
+  //+ use server to verify item
   const verifyItem = (item) => {
     const results = firestore
       .collection('levels')
@@ -58,7 +55,7 @@ const Board = () => {
     return results;
   };
 
-  // get item list once on load
+  //+ get item list once on load
   useEffect(() => {
     firestore
       .collection('levels')
@@ -73,10 +70,12 @@ const Board = () => {
       });
   }, []);
 
+  //+ match item locally
   const matchItem = (itemName) => {
     return itemsArray.find((item) => itemName === item.text);
   };
 
+  //+ Test the location of cursor
   async function testLocation(e, itemName) {
     e.preventDefault();
     const chosenItem = matchItem(itemName);
@@ -105,78 +104,30 @@ const Board = () => {
     }
   }
 
-  const onMouseMove = (e) => {
+  //+ handle the drop
+  const handleDrop = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    testLocation(e, dragItem);
+  };
+
+  //+ get the mouse coordinates
+  const onDragOver = (e) => {
+    e.preventDefault();
     setTagLocation((state) => ({
       ...state,
       x: e.nativeEvent.offsetX,
       y: e.nativeEvent.offsetY,
     }));
-    setContextMenu((state) => ({
-      ...state,
-      x: e.clientX,
-      y: e.clientY,
-    }));
   };
 
-  const handleClick = (e) => {
-    e.preventDefault();
-    setContextMenu((state) => ({
-      ...state,
-      display: 'block',
-    }));
-  };
-
-  const handleSelection = (e) => {
-    e.preventDefault();
-    const itemName = e.target.getAttribute('data-text');
-    testLocation(e, itemName);
-    setContextMenu((state) => ({
-      ...state,
-      display: 'none',
-    }));
-  };
-
-  const handleClose = (e) => {
-    e.preventDefault();
-    setContextMenu((state) => ({
-      ...state,
-      display: 'none',
-    }));
+  //+ store the dragged item in state
+  const onDragStart = (e) => {
+    setDragItem(e.target.getAttribute('data-text'));
   };
 
   return (
     <div>
-      <div
-        id="menu"
-        style={{
-          top: contextMenu.y,
-          left: contextMenu.x,
-          display: contextMenu.display,
-        }}
-      >
-        {itemsArray.map((item) => {
-          return (
-            <p
-              style={
-                item.chosen === true
-                  ? {
-                      textDecoration: 'line-through',
-                      opacity: '50%',
-                      display: 'none',
-                    }
-                  : {
-                      cursor: 'pointer',
-                    }
-              }
-              key={item.text}
-              data-text={item.text}
-              onClick={item.chosen !== true ? handleSelection : null}
-            >
-              {item.text}
-            </p>
-          );
-        })}
-      </div>
       <div id="container">
         <div id="board">
           <div id="sidebar">
@@ -193,6 +144,9 @@ const Board = () => {
                       : null
                   }
                   key={item.text}
+                  draggable="true"
+                  onDragStart={onDragStart}
+                  data-text={item.text}
                 >
                   {item.text}
                 </p>
@@ -201,10 +155,10 @@ const Board = () => {
           </div>
           <img
             className="picture"
-            onMouseMove={contextMenu.display === 'none' ? onMouseMove : null}
-            onClick={contextMenu.display === 'none' ? handleClick : handleClose}
             src={boardPhoto}
             alt=""
+            onDrop={handleDrop}
+            onDragOver={onDragOver}
           />
           <p style={{ position: 'absolute', bottom: 0 }}>
             {x} {y}
