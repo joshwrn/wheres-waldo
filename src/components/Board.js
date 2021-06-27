@@ -5,7 +5,7 @@ import '../styles/menu.css';
 import '../styles/board.css';
 
 import { AiFillCheckCircle } from 'react-icons/ai';
-import { FaTimesCircle } from 'react-icons/fa';
+import { FaTimesCircle, FaRedoAlt } from 'react-icons/fa';
 
 import firebase from 'firebase/app';
 import 'firebase/firestore';
@@ -32,13 +32,13 @@ const firestore = firebase.firestore();
 const Board = () => {
   const [tagLocation, setTagLocation] = useState({ x: 0, y: 0 });
   const [itemsArray, setItemsArray] = useState([]);
-  const { x, y } = tagLocation;
-  const temp = [];
   const [dragItem, setDragItem] = useState('');
   const [correctCheck, setCorrectCheck] = useState('');
   const [gameStatus, setGameStatus] = useState('setup');
   const [playerName, setPlayerName] = useState('');
   const [currentScore, setCurrentScore] = useState(0);
+  const [highScores, setHighScores] = useState([]);
+  const { x, y } = tagLocation;
 
   //+ use server to verify item
   const verifyItem = (item) => {
@@ -62,8 +62,8 @@ const Board = () => {
     return results;
   };
 
-  //+ get item list once on load
-  useEffect(() => {
+  const getItems = () => {
+    const temp = [];
     firestore
       .collection('levels')
       .doc('celebration')
@@ -75,6 +75,11 @@ const Board = () => {
         });
         setItemsArray(temp);
       });
+  };
+
+  //+ get item list once on load
+  useEffect(() => {
+    getItems();
   }, []);
 
   //? game set up functions
@@ -208,6 +213,18 @@ const Board = () => {
     e.preventDefault();
     sendScore(e, playerName);
     setGameStatus('over');
+    // get high scores
+    const tempScores = [];
+    firestore
+      .collection('users')
+      .limit(10)
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          tempScores.push(doc.data());
+        });
+        setHighScores(tempScores);
+      });
   };
 
   const handleChange = (e) => {
@@ -287,6 +304,14 @@ const Board = () => {
     setDragItem(e.target.getAttribute('data-text'));
   };
 
+  //? handle restart
+
+  const handleRestart = (e) => {
+    e.preventDefault();
+    getItems();
+    setGameStatus('setup');
+  };
+
   //! game menu
   let gameMenu;
 
@@ -294,11 +319,16 @@ const Board = () => {
     gameMenu = (
       <div>
         <form onSubmit={handleSubmit} id="name-form">
-          <label>
-            Name:
-            <input type="text" onChange={handleChange} value={playerName} />
-          </label>
-          <button type="submit"> Submit </button>
+          <p>Name:</p>
+          <input
+            id="name-input"
+            type="text"
+            onChange={handleChange}
+            value={playerName}
+          />
+          <button id="submit-button" type="submit">
+            Submit
+          </button>
         </form>
       </div>
     );
@@ -307,18 +337,23 @@ const Board = () => {
   if (gameStatus === 'over') {
     gameMenu = (
       <div id="game-over-text">
-        <h2>Game Over</h2>
-        <p>Your Score: {currentScore}</p>
-        <p>High Scores:</p>
-        {/* map over high scores */}
+        <h2 id="game-over-header">Game Over</h2>
+        <p id="your-score-text">Your Score - {currentScore}</p>
+        <h3>Top Scores:</h3>
+        {highScores.map((score) => (
+          <p className="score-text" key={score.name + score.score}>
+            {score.name} - {score.score}
+          </p>
+        ))}
+        <FaRedoAlt id="redo-button" onClick={handleRestart} />
       </div>
     );
   }
 
   if (gameStatus === 'setup') {
     gameMenu = (
-      <div id="start-text">
-        <h2 onClick={handleStart}>Start Game</h2>
+      <div onClick={handleStart} id="start-text">
+        <h2>Start Game</h2>
       </div>
     );
   }
@@ -329,8 +364,10 @@ const Board = () => {
 
   return (
     <div>
+      <p style={{ position: 'absolute', bottom: 0 }}>
+        {x} {y}
+      </p>
       <div id="container">
-        <p>hi {playerName}</p>
         <div id="check">
           <div id="check-text">
             {correctCheck === 'Correct' ? (
@@ -349,18 +386,23 @@ const Board = () => {
               return (
                 <p
                   style={
-                    item.chosen === true
+                    item.chosen !== true && gameStatus === 'in-game'
                       ? {
+                          cursor: 'pointer',
+                        }
+                      : {
                           textDecoration: 'line-through',
                           opacity: '50%',
                           cursor: 'default',
-                        }
-                      : {
-                          cursor: 'pointer',
+                          display: 'none',
                         }
                   }
                   key={item.text}
-                  draggable={item.chosen === true ? 'false' : 'true'}
+                  draggable={
+                    item.chosen !== true && gameStatus === 'in-game'
+                      ? 'true'
+                      : 'false'
+                  }
                   onDragStart={onDragStart}
                   data-text={item.text}
                 >
@@ -376,9 +418,6 @@ const Board = () => {
             onDrop={handleDrop}
             onDragOver={onDragOver}
           />
-          <p style={{ position: 'absolute', bottom: 0 }}>
-            {x} {y}
-          </p>
         </div>
       </div>
     </div>

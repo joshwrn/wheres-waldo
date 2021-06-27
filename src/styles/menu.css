@@ -1,8 +1,116 @@
-#menu {
+textarea:focus,
+input:focus {
+  outline: none;
+}
+
+button:focus {
+  outline: 0;
+}
+
+#game-menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  margin: 0;
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.603);
-  backdrop-filter: blur(2em);
-  padding: 0.25em 2em 0.25em 1em;
-  border-radius: 0.5em;
-  box-shadow: 0px 3px 5px 1px rgba(0, 0, 0, 0.541);
+  top: 50%;
+  left: 0;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+#name-input {
+  background: rgba(255, 255, 255, 0.349);
+  border: 1px solid rgba(255, 255, 255, 0.123);
+  border-radius: 0.25em;
+  height: 35px;
+  align-self: center;
+  margin: 1em;
+  color: white;
+}
+
+#submit-button {
+  transition: 0.5s;
+  border-radius: 0.25em;
+  border: 1px solid rgba(255, 255, 255, 0.123);
+  background-color: rgb(255, 255, 255);
+  color: black;
+  width: 75px;
+  height: 25px;
+  justify-self: center;
+  align-self: center;
+}
+
+/*+ start game */
+#start-text {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.877);
+  color: rgb(255, 255, 255);
+  width: 20em;
+  height: fit-content;
+  padding: 3em;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 1em;
+  opacity: 100;
+  transition: opacity 0.25s;
+  cursor: pointer;
+}
+
+/*+ form */
+#name-form {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.822);
+  color: rgb(255, 255, 255);
+  width: 20em;
+  height: fit-content;
+  padding: 3em;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 1em;
+  transition: opacity 0.25s;
+}
+
+#submit-button {
+}
+
+/*+ high scores */
+#game-over-text {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.822);
+  color: rgb(255, 255, 255);
+  width: 20em;
+  height: fit-content;
+  padding: 3em;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 1em;
+  transition: opacity 0.25s;
+  font-size: 0.75rem;
+}
+
+#game-over-header {
+  margin-bottom: 0.2em;
+}
+
+#your-score-text {
+  margin-bottom: 1em;
+}
+
+.score-text {
+  margin: 0.5em;
+}
+
+#redo-button {
+  cursor: pointer;
+  margin-top: 1em;
+  font-size: 1.2rem;
 }
