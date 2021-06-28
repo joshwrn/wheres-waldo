@@ -17,8 +17,8 @@ const Menu = ({ getItems, gameStatus, setGameStatus }) => {
       .collection('users')
       .doc(user.uid)
       .get()
-      .then((exists) => {
-        if (exists.data().score === undefined) {
+      .then((userData) => {
+        if (!userData.exists) {
           console.log('add');
           firestore
             .collection('users')
