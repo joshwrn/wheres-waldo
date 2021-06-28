@@ -1,0 +1,12 @@
+#sidebar {
+  text-align: left;
+  padding: 2em;
+  background-color: rgba(0, 0, 0, 0.479);
+  overflow-y: scroll;
+  height: inherit;
+}
+
+#sidebar > p {
+  font-size: 0.95rem;
+  margin-top: 0.5em;
+}
