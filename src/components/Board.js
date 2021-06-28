@@ -47,7 +47,6 @@ const Board = () => {
       .collection('levels')
       .doc('celebration')
       .collection('items')
-      .limit(3)
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
