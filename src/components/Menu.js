@@ -91,9 +91,9 @@ const Menu = ({ getItems, gameStatus, setGameStatus }) => {
   };
 
   //? handle submit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    sendScore(e, playerName);
+    await sendScore(e, playerName);
     setGameStatus('over');
     // get high scores
     const tempScores = [];
@@ -166,6 +166,7 @@ const Menu = ({ getItems, gameStatus, setGameStatus }) => {
     gameMenu = (
       <div onClick={handleStart} id="start-text">
         <h2>Start Game</h2>
+        <p id="instructions">Drag & Drop Items From the Sidebar</p>
       </div>
     );
   }

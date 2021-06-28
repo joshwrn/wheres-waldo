@@ -61,6 +61,10 @@ button:focus {
   cursor: pointer;
 }
 
+#instructions {
+  font-size: 0.75rem;
+}
+
 /*+ form */
 #name-form {
   display: flex;
