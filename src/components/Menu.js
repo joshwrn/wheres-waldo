@@ -99,7 +99,9 @@ const Menu = ({ getItems, gameStatus, setGameStatus }) => {
     const tempScores = [];
     firestore
       .collection('users')
-      .limit(10)
+      .where('score', '!=', 0)
+      .orderBy('score', 'desc')
+      .limit(5)
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
